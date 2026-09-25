@@ -6,10 +6,12 @@
 
 # --- Java / Maven ---
 target/
-!.mvn/wrapper/maven-wrapper.jar
+# Le jar du wrapper mvnw est livré (le formateur n'installe pas Maven) :
+# le motif est ancré au dépôt, d'où le ** obligatoire pour backend/.mvn/.
+*.jar
+!**/.mvn/wrapper/maven-wrapper.jar
 .mvn/timing.properties
 *.class
-*.jar
 *.war
 hs_err_pid*
 replay_pid*
