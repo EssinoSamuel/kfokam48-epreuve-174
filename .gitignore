@@ -1,0 +1,56 @@
+# ============================================================
+# .gitignore — kfokam48-epreuve
+# Posé AVANT le premier commit de code (hygiène Git exigée par le sujet)
+# Backend : Java / Spring Boot / Maven — Frontend : JS (React, Angular, Next.js)
+# ============================================================
+
+# --- Java / Maven ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+*.class
+*.jar
+*.war
+hs_err_pid*
+replay_pid*
+
+# --- Node / frontend ---
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- IDE / éditeurs ---
+.idea/
+.vscode/
+*.iml
+
+# --- OS ---
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# --- Secrets et configuration locale ---
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.properties
+*-local.yml
+
+# --- Dossier de travail temporaire (scripts de vérification) ---
+.tmp/
+
+# --- Épreuve : documents de travail, non livrés dans le dépôt ---
+EPREUVE_KFOKAM48/
+EPREUVE_KFOKAM48_ETUDIANTS.zip
+LISEZ-MOI_CANDIDAT_KFOKAM48.pdf
+Prompt Maitre.txt
+AjustementPrompt-mettre
