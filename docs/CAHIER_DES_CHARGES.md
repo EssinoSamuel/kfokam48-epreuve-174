@@ -1,12 +1,10 @@
 # Cahier des charges — Suivi de présence, exercices et relectures entre pairs
 
-**Auteur :** <ton nom et prénom(s)> · <ton matricule>
-**Version :** 1 · **Date :** <date>
-**Frontend choisi :** <React | Angular | Next.js>, parce que ...
-
-> Brouillon de travail construit avec Claude en mode mentor. À relire, corriger,
-> compléter avant le commit `[JALON] analyse`. Tout ce qui reste en `<...>` compte
-> pour zéro à la remise.
+**Auteur :** ESSINO Samuel · 174
+**Version :** 1 · **Date :** 25/09/2026
+**Frontend choisi :** React + Vite, parce que l'écosystème est le plus répandu pour une
+application à trois écrans, le build se reproduit simplement (`npm ci && npm run build`)
+et la couche d'appels API s'isole dans un module dédié (contrainte F3).
 
 ---
 

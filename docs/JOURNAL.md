@@ -1,4 +1,4 @@
-# Journal de bord — <matricule>
+# Journal de bord — 174 (ESSINO Samuel)
 
 > Une entrée **par étape**, écrite **au moment où tu la termines**, pas à la fin de la journée.
 > Chaque entrée répond aux trois mêmes questions : **Fait** / **Bloqué** (et combien de
