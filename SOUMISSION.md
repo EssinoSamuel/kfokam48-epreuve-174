@@ -20,7 +20,7 @@
 | | |
 |---|---|
 | Dépôt (public) | https://github.com/EssinoSamuel/kfokam48-epreuve-174 |
-| Commit final — hash complet, 40 caractères | à relever au moment de la soumission (étape 6) |
+| Commit final — hash complet, 40 caractères | `0850cc2cdeca78bc57b55af23e1c92a41c06f6f2` — dernier commit à ce jour (relevé le 25/09/2026) ; à réactualiser sur le tout dernier commit à l'étape 6 |
 | Branche | `main` |
 
 ## Épreuve Git — étape 5
@@ -36,7 +36,7 @@
 |---|---|
 | Frontend utilisé | React + Vite |
 | Backend | Java 21 LTS · Spring Boot · Maven (wrapper `mvnw` commité) |
-| Base de données | à trancher : PostgreSQL 16 (`docker compose`, recommandé) ou H2 |
+| Base de données | PostgreSQL 16 — `docker compose` (port hôte **5434**, 5432 occupé) + migrations Flyway |
 | Commandes de démarrage | à documenter à l'étape 2 (README, trois commandes maximum) |
 
 ## Ce que j'ai livré
