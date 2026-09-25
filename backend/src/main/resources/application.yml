@@ -1,0 +1,69 @@
+# ============================================================
+# Configuration commune — backend KFOKAM48
+#
+# Profil par défaut : PostgreSQL 16 lancé par docker compose,
+# joignable sur le port hôte 5434 (voir docker-compose.yml).
+# Profil « test » (src/test/resources) : H2 en mémoire, sans Docker.
+# ============================================================
+
+spring:
+  application:
+    name: kfokam48-epreuve-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5434/kfokam48
+    username: kfokam48
+    password: kfokam48
+
+  jpa:
+    # B5 : le schéma est porté par Flyway, jamais par Hibernate.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    placeholders:
+      # PostgreSQL ne rattrape pas seul les séquences après insertion
+      # d'identifiants explicites (V2) : c'est le seul motif de ce bloc.
+      avancer_sequences: >-
+        SELECT setval(pg_get_serial_sequence('promotion', 'id'), 1, true);
+        SELECT setval(pg_get_serial_sequence('etudiant', 'id'), 12, true);
+        SELECT setval(pg_get_serial_sequence('exercice', 'id'), 5, true);
+        SELECT setval(pg_get_serial_sequence('relecture', 'id'), 5, true);
+        SELECT setval(pg_get_serial_sequence('session', 'id'), 2, true);
+      # Un seul relecteur par étudiant « sans session » (H7) : l'index partiel
+      # est propre à PostgreSQL.
+      index_uniq_tentative_sans_session: >-
+        CREATE UNIQUE INDEX uq_tentative_code_sans_session
+        ON tentative_code (etudiant_id) WHERE session_id IS NULL;
+
+  # Toute réponse JSON sérialise les dates en ISO-8601 UTC, comme le contrat.
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+
+# Règle métier paramétrable plutôt que codée en dur : cf. RG1, RG10.
+kfokam48:
+  code:
+    validite-minutes: 15
+  tentatives:
+    max: 5
+    blocage-minutes: 2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    cm.kfokam.epreuve: INFO

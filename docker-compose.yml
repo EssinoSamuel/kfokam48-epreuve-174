@@ -1,0 +1,33 @@
+# ============================================================
+# PostgreSQL 16 pour le développement local.
+#
+# Le port hôte est 5434 (et non 5432) : un PostgreSQL natif occupe
+# déjà 5432 sur le poste de développement. Le conteneur, lui, écoute
+# toujours sur 5432 en interne — seule la redirection change.
+#
+# Démarrage :  docker compose up -d
+# Arrêt :      docker compose down          (les données sont conservées)
+#             docker compose down -v        (supprime aussi le volume)
+# ============================================================
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kfokam48-postgres
+    environment:
+      POSTGRES_DB: kfokam48
+      POSTGRES_USER: kfokam48
+      POSTGRES_PASSWORD: kfokam48
+    ports:
+      - "5434:5432"
+    volumes:
+      - kfokam48-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kfokam48 -d kfokam48"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  kfokam48-pgdata:
