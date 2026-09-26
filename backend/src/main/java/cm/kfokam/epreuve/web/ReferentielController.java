@@ -14,6 +14,11 @@ import cm.kfokam.epreuve.domaine.StatutRelecture;
 import cm.kfokam.epreuve.domaine.StatutSession;
 import cm.kfokam.epreuve.repository.EtudiantRepository;
 import cm.kfokam.epreuve.repository.PromotionRepository;
+import cm.kfokam.epreuve.repository.RelectureRepository;
+import cm.kfokam.epreuve.service.ExerciceService;
+import cm.kfokam.epreuve.service.RelectureService;
+import cm.kfokam.epreuve.web.dto.ExerciceDto;
+import cm.kfokam.epreuve.web.dto.RelectureDto;
 import cm.kfokam.epreuve.web.dto.Referentiel;
 import cm.kfokam.epreuve.web.erreur.CodeErreur;
 import cm.kfokam.epreuve.web.erreur.ErreurMetierException;
@@ -32,10 +37,20 @@ public class ReferentielController {
 
     private final PromotionRepository promotions;
     private final EtudiantRepository etudiants;
+    private final ExerciceService exerciceService;
+    private final RelectureService relectureService;
+    private final RelectureRepository relectures;
 
-    public ReferentielController(PromotionRepository promotions, EtudiantRepository etudiants) {
+    public ReferentielController(PromotionRepository promotions,
+                                 EtudiantRepository etudiants,
+                                 ExerciceService exerciceService,
+                                 RelectureService relectureService,
+                                 RelectureRepository relectures) {
         this.promotions = promotions;
         this.etudiants = etudiants;
+        this.exerciceService = exerciceService;
+        this.relectureService = relectureService;
+        this.relectures = relectures;
     }
 
     /** Promotion par défaut : évite au formateur de choisir s'il n'y en a qu'une. */
@@ -91,6 +106,32 @@ public class ReferentielController {
         return etudiants.findById(id)
                 .map(e -> new Referentiel.EtudiantVue(e.getId(), e.getNom(), e.getPromotion().getId()))
                 .orElseThrow(() -> new ErreurMetierException(CodeErreur.ETUDIANT_INCONNU));
+    }
+
+    /** Zone libre (H8) : exercices d'une session, filtre statut optionnel. */
+    @GetMapping("/sessions/{id}/exercices")
+    public List<ExerciceDto.Reponse> exercicesDeLaSession(
+            @PathVariable Long id,
+            @RequestParam(required = false) StatutExercice statut) {
+        return exerciceService.parSession(id, statut).stream()
+                .map(e -> ExerciceDto.Reponse.de(e, e.getRelectureLecture()))
+                .toList();
+    }
+
+    /** Zone libre (H9) : exercices d'un étudiant avec note et commentaire (EF9). */
+    @GetMapping("/etudiants/{id}/exercices")
+    public List<ExerciceDto.Reponse> exercicesDeLEtudiant(@PathVariable Long id) {
+        return exerciceService.parEtudiant(id).stream()
+                .map(e -> ExerciceDto.Reponse.de(e, e.getRelectureLecture()))
+                .toList();
+    }
+
+    /** Zone libre (H9) : relectures assignées à un étudiant (écran relecteur). */
+    @GetMapping("/etudiants/{id}/relectures")
+    public List<RelectureDto.Reponse> relecturesDeLEtudiant(@PathVariable Long id) {
+        return relectureService.pourRelecteur(id).stream()
+                .map(RelectureDto.Reponse::de)
+                .toList();
     }
 
     private Referentiel.EnumerationVue vue(Enum<?> valeur) {

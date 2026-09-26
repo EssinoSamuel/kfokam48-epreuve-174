@@ -40,19 +40,33 @@ public class RelectureController {
         this.relectureService = relectureService;
     }
 
-    /** Opération imposée n°4 : démarrer une relecture (verrouille le lien). */
+    /** Opération imposée n°4 du contrat : envoyer la note et le commentaire — définitif (RG5). */
+    @PostMapping("/{id}")
+    public ResponseEntity<Void> noterImpose(@PathVariable Long id,
+                                            @Valid @RequestBody RelectureDto.Note requete) {
+        relectureService.rendre(id, requete.note(), requete.commentaire());
+        return ResponseEntity.ok().build();
+    }
+
+    /** Alias avec retour DTO : envoyer la note et le commentaire. */
+    @PostMapping("/{id}/note")
+    public RelectureDto.Reponse noter(@PathVariable Long id,
+                                      @Valid @RequestBody RelectureDto.Note requete) {
+        return RelectureDto.Reponse.de(relectureService.rendre(id, requete.note(), requete.commentaire()));
+    }
+
+    /** Zone libre (H4) : démarrer une relecture (verrouille le lien de l'exercice). */
+    @PostMapping("/{id}/demarrer")
+    public RelectureDto.Reponse demarrerParPath(@PathVariable Long id) {
+        return RelectureDto.Reponse.de(relectureService.demarrer(id));
+    }
+
+    /** Variante démarrer par body : démarrer une relecture. */
     @PostMapping
     public ResponseEntity<RelectureDto.Reponse> demarrer(
             @Valid @RequestBody RelectureDto.Demarrage requete) {
         Relecture relecture = relectureService.demarrer(requete.relectureId());
         return ResponseEntity.status(HttpStatus.CREATED).body(RelectureDto.Reponse.de(relecture));
-    }
-
-    /** Opération imposée n°5 : envoyer la note et le commentaire — définitif (RG5). */
-    @PostMapping("/{id}/note")
-    public RelectureDto.Reponse noter(@PathVariable Long id,
-                                      @Valid @RequestBody RelectureDto.Note requete) {
-        return RelectureDto.Reponse.de(relectureService.rendre(id, requete.note(), requete.commentaire()));
     }
 
     /** Relectures assignées à un étudiant — écran relecteur (EF7). */

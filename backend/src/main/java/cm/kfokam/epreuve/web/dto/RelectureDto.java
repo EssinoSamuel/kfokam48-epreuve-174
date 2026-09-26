@@ -2,6 +2,11 @@ package cm.kfokam.epreuve.web.dto;
 
 import java.time.Instant;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import cm.kfokam.epreuve.domaine.Relecture;
 import cm.kfokam.epreuve.domaine.StatutRelecture;
 
@@ -18,11 +23,22 @@ public final class RelectureDto {
     }
 
     /** Corps de requête de l'opération imposée n°4 : {relectureId}. */
-    public record Demarrage(Long relectureId) {
+    public record Demarrage(
+            @NotNull(message = "L'identifiant de relecture est obligatoire.")
+            Long relectureId
+    ) {
     }
 
     /** Corps de requête de l'opération imposée n°5 : {note, commentaire}. */
-    public record Note(Integer note, String commentaire) {
+    public record Note(
+            @NotNull(message = "La note est obligatoire.")
+            @Min(value = 0, message = "La note doit être positive.")
+            @Max(value = 20, message = "La note ne peut pas dépasser 20.")
+            Integer note,
+
+            @Size(max = 2000, message = "Le commentaire ne peut pas dépasser 2000 caractères.")
+            String commentaire
+    ) {
     }
 
     /** Relecture telle que renvoyée à l'interface. */

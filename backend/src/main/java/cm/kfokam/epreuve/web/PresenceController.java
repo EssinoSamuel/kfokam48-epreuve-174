@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 import cm.kfokam.epreuve.domaine.Etudiant;
 import cm.kfokam.epreuve.domaine.Presence;
@@ -70,11 +72,12 @@ public class PresenceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(PresenceDto.Reponse.de(presence));
     }
 
-    /** Variante utilisée par l'écran formateur pour l'ajout manuel (EF3). */
-    @PostMapping("/formateur")
-    public ResponseEntity<PresenceDto.Reponse> ajouterParFormateur(
-            @Valid @RequestBody PresenceDto.RequeteFormateur requete) {
-        Session session = sessions.findById(requete.sessionId())
+    /** Zone libre (H3) : le formateur ajoute une présence manuellement par path. */
+    @PostMapping("/session/{sessionId}")
+    public ResponseEntity<PresenceDto.Reponse> ajouterParSessionPath(
+            @PathVariable Long sessionId,
+            @Valid @RequestBody PresenceDto.RequeteFormateurSession requete) {
+        Session session = sessions.findById(sessionId)
                 .orElseThrow(() -> new ErreurMetierException(CodeErreur.SESSION_INCONNUE));
         Etudiant etudiant = etudiants.findById(requete.etudiantId())
                 .orElseThrow(() -> new ErreurMetierException(CodeErreur.ETUDIANT_INCONNU));

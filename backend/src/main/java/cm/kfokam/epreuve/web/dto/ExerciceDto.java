@@ -2,6 +2,10 @@ package cm.kfokam.epreuve.web.dto;
 
 import java.time.Instant;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import cm.kfokam.epreuve.domaine.Exercice;
 import cm.kfokam.epreuve.domaine.Relecture;
 
@@ -20,11 +24,25 @@ public final class ExerciceDto {
     }
 
     /** Corps de requête du dépôt imposé : {sessionId, etudiantId, lien}. */
-    public record Depot(Long sessionId, Long etudiantId, String lien) {
+    public record Depot(
+            @NotNull(message = "L'identifiant de session est obligatoire.")
+            Long sessionId,
+
+            @NotNull(message = "L'identifiant étudiant est obligatoire.")
+            Long etudiantId,
+
+            @NotBlank(message = "Le lien d'exercice est obligatoire.")
+            @Size(max = 2048, message = "Le lien ne peut dépasser 2048 caractères.")
+            String lien
+    ) {
     }
 
     /** Corps de requête du remplacement de lien (EF6). */
-    public record Lien(String lien) {
+    public record Lien(
+            @NotBlank(message = "Le nouveau lien est obligatoire.")
+            @Size(max = 2048, message = "Le lien ne peut dépasser 2048 caractères.")
+            String lien
+    ) {
     }
 
     /** Aperçu du relecteur associé à un exercice. */

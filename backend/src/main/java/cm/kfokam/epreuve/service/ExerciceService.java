@@ -133,9 +133,7 @@ public class ExerciceService {
     @Transactional(readOnly = true)
     public List<Exercice> parSession(Long sessionId, StatutExercice statut) {
         sessionService.parId(sessionId);
-        return statut == null
-                ? exercices.findBySessionIdOrderByDeposeAtAsc(sessionId)
-                : exercices.findBySessionIdAndStatutOrderByDeposeAtAsc(sessionId, statut);
+        return exercices.trouverAvecDetailsPourSession(sessionId, statut);
     }
 
     @Transactional(readOnly = true)
@@ -143,7 +141,7 @@ public class ExerciceService {
         if (!etudiants.existsById(etudiantId)) {
             throw new ErreurMetierException(CodeErreur.ETUDIANT_INCONNU);
         }
-        return exercices.findByEtudiantIdOrderByDeposeAtDesc(etudiantId);
+        return exercices.trouverAvecDetailsPourEtudiant(etudiantId);
     }
 
     @Transactional(readOnly = true)

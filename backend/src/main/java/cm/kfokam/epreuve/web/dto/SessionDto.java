@@ -2,6 +2,10 @@ package cm.kfokam.epreuve.web.dto;
 
 import java.time.Instant;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import cm.kfokam.epreuve.domaine.Session;
 
 /**
@@ -18,7 +22,14 @@ public final class SessionDto {
     }
 
     /** Corps de requête d'ouverture : {titre, promotionId}. */
-    public record Ouverture(String titre, Long promotionId) {
+    public record Ouverture(
+            @NotBlank(message = "Le titre est obligatoire.")
+            @Size(max = 160, message = "Le titre ne peut dépasser 160 caractères.")
+            String titre,
+
+            @NotNull(message = "L'identifiant de promotion est obligatoire.")
+            Long promotionId
+    ) {
     }
 
     /** Session telle que renvoyée à l'interface. */

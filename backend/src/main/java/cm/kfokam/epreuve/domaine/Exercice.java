@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
@@ -37,6 +38,15 @@ public class Exercice {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "etudiant_id", nullable = false)
     private Etudiant etudiant;
+
+    /**
+     * Relation inverse vers la relecture éventuelle (un seul relecteur par
+     * exercice — Q6). mappedBy car la clé étrangère est portée par relecture.
+     * Elle permet le fetch join dans les requêtes de lecture, ce qui évite
+     * toute LazyInitializationException au moment de sérialiser le JSON.
+     */
+    @OneToOne(mappedBy = "exercice", fetch = FetchType.LAZY)
+    private Relecture relectureLecture;
 
     @Column(name = "lien", nullable = false, length = 2048)
     private String lien;
@@ -97,6 +107,11 @@ public class Exercice {
 
     public Etudiant getEtudiant() {
         return etudiant;
+    }
+
+    /** Relecture éventuelle, déjà chargée par les requêtes de lecture. */
+    public Relecture getRelectureLecture() {
+        return relectureLecture;
     }
 
     public String getLien() {

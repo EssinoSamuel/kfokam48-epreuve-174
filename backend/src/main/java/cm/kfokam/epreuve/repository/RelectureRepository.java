@@ -22,6 +22,8 @@ public interface RelectureRepository extends JpaRepository<Relecture, Long> {
             select r from Relecture r
             join fetch r.exercice e
             join fetch e.session
+            join fetch e.etudiant
+            join fetch r.relecteur
             where r.relecteur.id = :etudiantId
             order by r.id asc
             """)
