@@ -1,6 +1,10 @@
-import { Carte } from '../../components/ui.jsx'
-import { SelecteurPromotion } from '../formateur/EcranFormateur.jsx'
+import { Carte, Alerte } from '../../components/ui.jsx'
+import { SelecteurPromotion, SelecteurEtudiant } from '../../components/selecteurs.jsx'
 
+/**
+ * Ecran etudiant — Phase 4.
+ * Identite sans authentification (Q1) : promotion puis nom dans la liste.
+ */
 export default function EcranEtudiant() {
   return (
     <>
@@ -13,14 +17,16 @@ export default function EcranEtudiant() {
         </div>
       </header>
       <div className="grille grille--2">
-        <Carte titre="Promotion">
+        <Carte titre="Mon identité" description="Aucun mot de passe n’est demandé (Q1).">
           <SelecteurPromotion />
+          <SelecteurEtudiant />
         </Carte>
-        <Carte titre="À venir — Phase 5">
-          Sélection du nom, saisie du code de présence, dépôt et remplacement du lien,
-          consultation de la note et du commentaire seront construits à cette phase.
+        <Carte titre="À venir — Phase 4">
+          Saisie du code de présence, dépôt et remplacement du lien, consultation de la note
+          et du commentaire seront construits dans cette phase.
         </Carte>
       </div>
     </>
   )
 }
+

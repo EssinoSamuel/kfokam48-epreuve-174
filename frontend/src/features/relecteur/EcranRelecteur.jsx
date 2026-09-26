@@ -1,6 +1,7 @@
 import { Carte } from '../../components/ui.jsx'
-import { SelecteurPromotion } from '../formateur/EcranFormateur.jsx'
+import { SelecteurPromotion, SelecteurEtudiant } from '../../components/selecteurs.jsx'
 
+/** Ecran relecteur — Phase 5. Le relecteur est un etudiant (Q7). */
 export default function EcranRelecteur() {
   return (
     <>
@@ -13,14 +14,16 @@ export default function EcranRelecteur() {
         </div>
       </header>
       <div className="grille grille--2">
-        <Carte titre="Promotion">
+        <Carte titre="Mon identité" description="Le relecteur est choisi parmi les étudiants présents (Q7).">
           <SelecteurPromotion />
+          <SelecteurEtudiant />
         </Carte>
-        <Carte titre="À venir — Phase 6">
+        <Carte titre="À venir — Phase 5">
           Liste des relectures assignées, démarrage (verrouillage du lien), notation de 0 à 20
-          et commentaire seront construits à cette phase.
+          et commentaire seront construits dans cette phase.
         </Carte>
       </div>
     </>
   )
 }
+
