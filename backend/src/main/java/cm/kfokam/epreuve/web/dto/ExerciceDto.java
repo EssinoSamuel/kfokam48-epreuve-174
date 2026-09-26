@@ -51,7 +51,9 @@ public final class ExerciceDto {
 
     /** Exercice tel que renvoyé à l'interface. */
     public record Reponse(Long id, Long sessionId, Long etudiantId, String etudiantNom,
-                          String lien, String statut, Instant deposeAt, RelecteurVue relecture) {
+                          String lien, String statut, Instant deposeAt,
+                          Integer note, String commentaire,
+                          RelecteurVue relecture) {
 
         public static Reponse de(Exercice exercice) {
             return de(exercice, null);
@@ -65,6 +67,9 @@ public final class ExerciceDto {
                             relecture.getRelecteur().getId(),
                             relecture.getRelecteur().getNom(),
                             relecture.getStatut().name());
+            // note et commentaire proviennent de la relecture rendue : ils
+            // restent nuls tant qu'aucune note n'est arrivée (contrat API,
+            // GET /api/etudiants/{id}/exercices — champs requis note/commentaire).
             return new Reponse(
                     exercice.getId(),
                     exercice.getSession().getId(),
@@ -73,6 +78,8 @@ public final class ExerciceDto {
                     exercice.getLien(),
                     exercice.getStatut().name(),
                     exercice.getDeposeAt(),
+                    relecture == null ? null : relecture.getNote(),
+                    relecture == null ? null : relecture.getCommentaire(),
                     vue);
         }
     }

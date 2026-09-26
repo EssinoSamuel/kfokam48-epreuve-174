@@ -1,51 +1,40 @@
 import { Carte } from '../../components/ui.jsx'
 import { SelecteurPromotion, SelecteurEtudiant } from '../../components/selecteurs.jsx'
-import { CartePresence } from './CartePresence.jsx'
-import { CarteDepotExercice, CarteRemplacerLien } from './CarteExercice.jsx'
-import CarteMesExercices from './CarteMesExercices.jsx'
-import { useApp } from '../../context/AppContext.jsx'
-import { useRequete } from '../../hooks/useRequete.js'
-import { exercicesApi } from '../../api/index.js'
+import { BlocPresence } from './blocPresence.jsx'
+import { BlocDepot, BlocMesExercices } from './blocExercices.jsx'
 
 /**
- * Ecran etudiant — parcours complet (Phase 4).
- * Identite → presence → depot → consultation (EF2, EF5, EF6, EF9).
+ * Ecran etudiant : identite → presence → exercice → consultation (Q1, Q12, Q13, Q8).
+ * Parcours volontairement simple pour rester utilisable sur mobile (F2).
  */
 export default function EcranEtudiant() {
-  const { etudiantId } = useApp()
-  const { donnees: exercices } = useRequete(
-    etudiantId ? () => exercicesApi.parEtudiant(etudiantId) : null,
-    [etudiantId],
-    [],
-  )
-
   return (
     <>
       <header className="page-entete">
         <div>
           <h1 className="page-entete__titre">Espace étudiant</h1>
           <p className="page-entete__description">
-            Choisissez votre nom, marquez votre présence et déposez votre exercice.
+            Choisissez votre nom, marquez votre présence, déposez votre exercice et consultez
+            votre note.
           </p>
         </div>
       </header>
 
-      <div className="grille grille--2" style={{ marginBottom: 'var(--espace-5)' }}>
-        <Carte titre="Mon identité" description="Aucun mot de passe n’est demandé (Q1).">
+      <div className="grille grille--2" style={{ marginBottom: '1rem' }}>
+        <Carte
+          titre="Qui êtes-vous ?"
+          description="Aucun mot de passe : on simule l’identité, ce n’est pas une authentification (Q1)."
+        >
           <SelecteurPromotion />
           <SelecteurEtudiant />
         </Carte>
-        <CartePresence />
+        <BlocPresence />
       </div>
 
-      <div className="grille grille--2" style={{ marginBottom: 'var(--espace-5)' }}>
-        <CarteDepotExercice />
-        <CarteRemplacerLien exercices={exercices ?? []} />
+      <div className="grille grille--2">
+        <BlocDepot />
+        <BlocMesExercices />
       </div>
-
-      <CarteMesExercices />
     </>
   )
 }
-
-
