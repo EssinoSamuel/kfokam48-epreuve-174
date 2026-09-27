@@ -113,10 +113,7 @@ CREATE TABLE tentative_code (
     CONSTRAINT ck_tentative_echecs CHECK (echecs >= 0)
 );
 
-CREATE UNIQUE INDEX uq_tentative_code_session
-    ON tentative_code (etudiant_id, session_id)
-    WHERE session_id IS NOT NULL;
-
-CREATE UNIQUE INDEX uq_tentative_code_sans_session
-    ON tentative_code (etudiant_id)
-    WHERE session_id IS NULL;
+-- Unicite du compteur RG10 (H7).
+-- Ces index sont PARTIELS : PostgreSQL les supporte, H2 non. Ils passent donc
+-- par un placeholder Flyway, vide sur le profil de test — cf. application.yml.
+${index_uniq_tentative_code}

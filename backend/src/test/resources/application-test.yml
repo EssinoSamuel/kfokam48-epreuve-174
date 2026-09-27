@@ -25,9 +25,9 @@ spring:
       # H2 repositionne lui-même ses colonnes IDENTITY après un INSERT
       # avec identifiant explicite : aucun setval n'est nécessaire.
       avancer_sequences: "-- sequences gerees automatiquement par H2"
-      # H2 n'accepte pas les index partiels (WHERE) : l'unicité de ce cas
-      # est alors portée par le code applicatif uniquement en test.
-      index_uniq_tentative_sans_session: "-- H2 n'accepte pas les index partiels"
+      # H2 n'accepte pas les index partiels (WHERE) : le placeholder est donc
+      # vide et l'unicite de ce cas reste portee par le code applicatif.
+      index_uniq_tentative_code: "-- index partiels non supportes par H2"
 
 server:
   port: 0

@@ -72,17 +72,66 @@ public class PresenceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(PresenceDto.Reponse.de(presence));
     }
 
-    /** Zone libre (H3) : le formateur ajoute une présence manuellement par path. */
+    /**
+     * Correctif (issue #16, enveloppe étape 3).
+     *
+     * <b>Avant :</b> l'ajout manuel n'était exposé que sur
+     * {@code POST /api/presences/session/{sessionId}}. Or le contrat d'API
+     * (décision H3) impose {@code POST /api/sessions/{id}/presences}, chemin
+     * qu'appelle l'écran formateur. L'appel renvoyait 404
+     * « La ressource demandée n'existe pas » : le formateur ne pouvait
+     * marquer aucun étudiant manuellement (Q14).
+     *
+     * <b>Après :</b> le chemin du contrat répond 201. L'ancien chemin est
+     * conservé quelques temps, mais il ne fait plus doublon d'implémentation :
+     * les deux délèguent à la même méthode.
+     */
     @PostMapping("/session/{sessionId}")
-    public ResponseEntity<PresenceDto.Reponse> ajouterParSessionPath(
+    public ResponseEntity<PresenceDto.Reponse> ajouterParCheminInterne(
             @PathVariable Long sessionId,
             @Valid @RequestBody PresenceDto.RequeteFormateurSession requete) {
+        return ajouterParFormateur(sessionId, requete);
+    }
+
+    /**
+     * Zone libre (H3) : chemin imposé par le contrat d'API.
+     * C'est cette opération que l'écran formateur appelle.
+     */
+    private ResponseEntity<PresenceDto.Reponse> ajouterParFormateur(
+            Long sessionId,
+            PresenceDto.RequeteFormateurSession requete) {
         Session session = sessions.findById(sessionId)
                 .orElseThrow(() -> new ErreurMetierException(CodeErreur.SESSION_INCONNUE));
         Etudiant etudiant = etudiants.findById(requete.etudiantId())
                 .orElseThrow(() -> new ErreurMetierException(CodeErreur.ETUDIANT_INCONNU));
         Presence presence = presenceService.ajouterParFormateur(session, etudiant);
         return ResponseEntity.status(HttpStatus.CREATED).body(PresenceDto.Reponse.de(presence));
+    }
+
+    /**
+     * Zone libre (H3) : le formateur ajoute une présence manuellement.
+     *
+     * <p>Chemin imposé par le contrat : {@code POST /api/sessions/{id}/presences}.
+     *
+     * <p>Le mapping est porté par un contrôleur dédié et non par
+     * {@code @RequestMapping("/api/presences")} : ce dernier ne peut pas produire
+     * le préfixe {@code /api/sessions}. C'est la cause du 404 corrigé ici.
+     */
+    @RestController
+    static class PresenceSessionController {
+
+        private final PresenceController presence;
+
+        PresenceSessionController(PresenceController presence) {
+            this.presence = presence;
+        }
+
+        @org.springframework.web.bind.annotation.PostMapping("/api/sessions/{sessionId}/presences")
+        public ResponseEntity<PresenceDto.Reponse> ajouter(
+                @PathVariable Long sessionId,
+                @Valid @RequestBody PresenceDto.RequeteFormateurSession requete) {
+            return presence.ajouterParFormateur(sessionId, requete);
+        }
     }
 
     /** Liste des présents d'une session — renvoie un tableau simple. */
