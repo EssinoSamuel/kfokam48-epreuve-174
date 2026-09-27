@@ -65,8 +65,8 @@ via une session, pas comme une nouvelle entité `Utilisateur`.*
 | EF3 | Le formateur ajoute une présence manuellement | Quand j'ajoute un étudiant absent du code, sa présence apparaît marquée « ajouté par le formateur » | Must |
 | EF4 | Le formateur clôture une session | Quand je clôture une session, plus aucun dépôt ni remplacement de lien d'exercice n'est accepté sur cette session | Must |
 | EF5 | L'étudiant dépose le lien de son exercice | Quand je dépose un lien valide pour une session non clôturée, l'exercice est créé et passe « en attente de relecture » ; il reste « déposé » si aucun relecteur éligible n'existe (H6) | Must |
-| EF6 | L'étudiant remplace le lien de son exercice | Quand la relecture n'a pas encore été commencée et que la session n'est pas clôturée, je peux remplacer le lien déposé ; sinon la tentative est refusée (409) | Should |
-| EF7 | Un relecteur est assigné automatiquement à chaque exercice déposé | Quand un exercice est déposé et qu'un étudiant présent autre que l'auteur existe, l'un d'eux est désigné au hasard ; sans candidat, l'exercice reste « déposé » et visible du formateur (H6) | Must |
+| EF6 | L'étudiant remplace le lien de son exercice | ~~Quand la relecture n'a pas encore été commencée…~~ **Retiré du périmètre (étape 3, enveloppe sujet B)** | ~~Should~~ **Hors périmètre** |
+| EF7 | Un relecteur est assigné automatiquement à chaque exercice déposé | ~~Quand un exercice est déposé et qu'un étudiant présent autre que l'auteur existe, l'un d'eux est désigné au hasard…~~ **Chaque exercice est relu par deux pairs différents** : le système désigne deux étudiants présents, distincts de l'auteur et l'un de l'autre (étape 3, enveloppe sujet B) | Must |
 | EF8 | Le relecteur envoie une note et un commentaire | Quand j'envoie une note entière entre 0 et 20 avec un commentaire, la relecture est enregistrée et devient définitive | Must |
 | EF9 | L'étudiant consulte sa note et son commentaire | Quand ma relecture est rendue, je vois la note et le commentaire, jamais le nom du relecteur | Must |
 | EF10 | Le formateur consulte le tableau de sa promotion | Quand j'ouvre le tableau, je vois par étudiant : présences, exercices déposés, moyenne des notes, relectures encore dues | Must |
@@ -86,16 +86,26 @@ via une session, pas comme une nouvelle entité `Utilisateur`.*
 | RG1 | Un code de présence expire 15 minutes après l'ouverture de la session | Q2 |
 | RG2 | Un étudiant ne peut pas relire son propre exercice | Q5 |
 | RG3 | Une note est un entier compris entre 0 et 20 | Q9 |
-| RG4 | Un seul relecteur est assigné par exercice, choisi au hasard parmi les étudiants présents à la session | Q6, Q7 |
+| RG4 | ~~Un seul relecteur est assigné par exercice, choisi au hasard parmi les étudiants présents à la session~~ **Deux relecteurs sont assignés par exercice, choisis au hasard parmi les étudiants présents, tous deux distincts de l'auteur et l'un de l'autre.** La note affichée est la moyenne des deux notes rendues ; tant que les deux ne sont pas rendues, la note est marquée provisoire | Q6 (modifié), Q7 |
 | RG5 | Une relecture envoyée est définitive : toute nouvelle tentative de soumission sur la même relecture est refusée (409) | Q15, confirmée par `api/contrat.yaml` (erreur `RELECTURE_DEJA_RENDUE`) |
 | RG6 | Un exercice non relu reste visible comme « en attente » dans le tableau du formateur, sans limite de temps imposée | Q11 |
 | RG7 | Un dépôt d'exercice n'est accepté que si la session n'est pas clôturée. La clôture est une action explicite du formateur, distincte de l'expiration du code de présence (15 min) | Q12 |
 | RG8 | Le remplacement du lien d'un exercice est refusé si la session est clôturée (RG7), ou si la relecture a été commencée ou rendue (statuts `EN_COURS` ou `RENDUE`) | Q12 (implicite), Q13 |
 | RG9 | Une présence ajoutée manuellement par le formateur est marquée distinctement d'une présence saisie par l'étudiant (`source = FORMATEUR`) | Q14 |
 | RG10 | Après cinq échecs consécutifs, un étudiant est bloqué deux minutes avant nouvelle tentative. Les échecs sont comptés par couple (étudiant, session) quand la session est identifiable (code expiré) et par étudiant seul quand le code est inconnu — sinon le compteur ne protégerait jamais contre le devinage de codes (Q4). Le blocage est signalé via le `400` déjà imposé sur `POST /api/presences`, avec le `code` métier `TROP_DE_TENTATIVES`. Le compteur est persisté et remis à zéro après l'expiration du blocage ou une présence réussie | Q4 |
-| RG11 | L'identité du relecteur n'est jamais exposée à l'étudiant relu : la note et le commentaire sont consultables, jamais le nom du relecteur | Q8 |
+| RG11 | L'identité des relecteurs n'est jamais exposée à l'étudiant relu : la note et les commentaires sont consultables, jamais les noms des relecteurs | Q8 |
+| RG12 | Un exercice ne peut pas avoir deux fois le même étudiant comme relecteur, et l'auteur n'est jamais relecteur | Q5, Q6 (modifié) |
 
 ## 7. Zones d'ombre, hypothèses et contradictions
+
+**Changements imposés par l'enveloppe d'étape 3 (sujet B) :**
+
+| Point | Conséquence | Ce qui a changé |
+|---|---|---|
+| **C1 — Deux relecteurs par exercice** | La règle issue de **Q6** (« un seul relecteur ») devient fausse : l'enveloppe la remplace par deux pairs, parce qu'un seul qui ne rend rien laisse l'étudiant sans note | **RG4 réécrite** (deux relecteurs, distincts de l'auteur et l'un de l'autre, moyenne des deux notes, note provisoire tant que les deux ne sont pas rendues) ; **RG12 ajoutée** (pas deux fois le même relecteur) ; **EF7** reformulée ; la contrainte d'unicité `uq_relecture_exercice` est **retirée** par la migration `V3` ; **D2** et **D4** mis à jour |
+| **C2 — Note provisoire** | Tant que les deux notes ne sont pas rendues, l'étudiant doit voir quelque chose | La réponse d'exercice expose la moyenne, le nombre de notes rendues et le statut de la note (`PROVISOIRE` / `DEFINITIVE`) ; **la moyenne est calculée par la base** (vue `moyenne_exercice`) et exposée par l'API, jamais recalculée par le frontend (F3) |
+| **C3 — Périmètre sacrifié** | Une exigence sort du périmètre pour absorber le changement à temps | **EF6 (remplacement du lien d'exercice) est retiré.** C'était une fonctionnalité *Should*, hors du cœur noté. Le maintenir aurait exigé de figer le premier relecteur pour interdire le remplacement — ce qui contredit la nouvelle règle des deux pairs. Un périmètre réduit assumé vaut mieux qu'un périmètre annoncé et non tenu. |
+| **C4 — Ce qui n'est pas touché** | Les opérations imposées du contrat restent intactes | Les 5 opérations imposées, leurs codes de statut et le format d'erreur `{code, message}` sont inchangés. EF1 à EF5, EF8, EF9 et EF10 restent livrés |
 
 **Points que la demande ne tranche pas :**
 
