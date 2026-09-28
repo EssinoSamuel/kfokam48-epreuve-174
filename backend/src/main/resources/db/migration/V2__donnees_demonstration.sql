@@ -11,7 +11,6 @@
 -- ============================================================
 
 INSERT INTO promotion (id, nom) VALUES (1, 'Fullstack KFOKAM48 — Promotion 2026');
-SELECT setval(pg_get_serial_sequence('promotion', 'id'), 1, true);
 
 INSERT INTO etudiant (id, nom, promotion_id) VALUES
     (1,  'ESSINO Samuel',      1),
@@ -26,7 +25,6 @@ INSERT INTO etudiant (id, nom, promotion_id) VALUES
     (10, 'TAMBA Serge',        1),
     (11, 'EWANE Prisca',       1),
     (12, 'DJOKO Armand',       1);
-SELECT setval(pg_get_serial_sequence('etudiant', 'id'), 12, true);
 
 -- ------------------------------------------------------------
 -- Session 1 — clôturée : cycle complet (présences, dépôts, relectures rendues)
@@ -63,7 +61,6 @@ INSERT INTO exercice (id, session_id, etudiant_id, lien, statut, depose_at) VALU
         TIMESTAMP WITH TIME ZONE '2026-09-22 09:30:00+01'),
     (5, 1,  5, 'https://github.com/example/tchouamo-session1', 'EN_ATTENTE_DE_RELECTURE',
         TIMESTAMP WITH TIME ZONE '2026-09-22 09:40:00+01');
-SELECT setval(pg_get_serial_sequence('exercice', 'id'), 5, true);
 
 -- Assignations : jamais l'auteur de l'exercice (RG2), un seul relecteur (Q6)
 INSERT INTO relecture (id, exercice_id, relecteur_id, statut, demarree_at, note, commentaire, rendue_at) VALUES
@@ -84,8 +81,6 @@ INSERT INTO relecture (id, exercice_id, relecteur_id, statut, demarree_at, note,
     (5, 5, 7, 'ASSIGNEE',
         NULL, NULL, NULL, NULL);
 
-SELECT setval(pg_get_serial_sequence('relecture', 'id'), 5, true);
-
 -- ------------------------------------------------------------
 -- Session 2 — ouverte, code encore valable : pour tester le marquage en direct
 -- ------------------------------------------------------------
@@ -100,4 +95,8 @@ INSERT INTO presence (session_id, etudiant_id, source, marquee_at) VALUES
     (2, 11, 'ETUDIANT',  TIMESTAMP WITH TIME ZONE '2026-09-25 08:02:00+01'),
     (2, 12, 'ETUDIANT',  TIMESTAMP WITH TIME ZONE '2026-09-25 08:03:00+01');
 
-SELECT setval(pg_get_serial_sequence('session', 'id'), 2, true);
+-- Les identifiants ci-dessus sont explicites : on doit repousser les sequences
+-- au-dela, sinon le premier INSERT applicatif entre en collision. setval est
+-- propre a PostgreSQL — le bloc passe par un placeholder, vide sur H2 qui
+-- repositionne ses colonnes IDENTITY toute seule (cf. application.yml).
+${avancer_sequences}

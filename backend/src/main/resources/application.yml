@@ -36,9 +36,12 @@ spring:
         SELECT setval(pg_get_serial_sequence('exercice', 'id'), 5, true);
         SELECT setval(pg_get_serial_sequence('relecture', 'id'), 5, true);
         SELECT setval(pg_get_serial_sequence('session', 'id'), 2, true);
-      # Un seul relecteur par étudiant « sans session » (H7) : l'index partiel
-      # est propre à PostgreSQL.
-      index_uniq_tentative_sans_session: >-
+      # Unicite du compteur d'echecs (RG10/H7). Ces index partiels sont
+      # propres a PostgreSQL : sur H2 (profil de test) le placeholder est vide
+      # et l'unicite reste portee par le code applicatif.
+      index_uniq_tentative_code: >-
+        CREATE UNIQUE INDEX uq_tentative_code_session
+        ON tentative_code (etudiant_id, session_id) WHERE session_id IS NOT NULL;
         CREATE UNIQUE INDEX uq_tentative_code_sans_session
         ON tentative_code (etudiant_id) WHERE session_id IS NULL;
 
