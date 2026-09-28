@@ -70,12 +70,14 @@ public class ExerciceController {
         } else {
             resultats = List.of();
         }
-        return resultats.stream().map(e -> ExerciceDto.Reponse.de(e, relectures.findByExerciceId(e.getId()).orElse(null))).toList();
+        return resultats.stream()
+                .map(e -> ExerciceDto.Reponse.de(e, e.getRelectureLecture()))
+                .toList();
     }
 
     @GetMapping("/{id}")
     public ExerciceDto.Reponse parId(@PathVariable Long id) {
         Exercice exercice = exerciceService.parId(id);
-        return ExerciceDto.Reponse.de(exercice, relectures.findByExerciceId(id).orElse(null));
+        return ExerciceDto.Reponse.de(exercice, exercice.getRelectureLecture());
     }
 }

@@ -110,13 +110,20 @@ export function BlocMesExercices() {
               texte: exercice.statut,
               variante: 'neutre',
             }
+            // La note est provisoire tant que les deux pairs n'ont pas rendu.
+            const noteProvisoire = exercice.statutNote === 'PROVISOIRE'
             return (
               <li key={exercice.id} className="carte" style={{ padding: '1rem' }}>
                 <div className="carte__entete" style={{ marginBottom: '0.5rem' }}>
                   <a href={exercice.lien} target="_blank" rel="noreferrer">
                     Voir mon dépôt
                   </a>
-                  <Badge variante={statut.variante}>{statut.texte}</Badge>
+                  <div className="rangee" style={{ gap: '0.5rem' }}>
+                    {noteProvisoire ? (
+                      <Badge variante="alerte">Note provisoire</Badge>
+                    ) : null}
+                    <Badge variante={statut.variante}>{statut.texte}</Badge>
+                  </div>
                 </div>
                 <div className="meta-liste">
                   <div className="meta-liste__ligne">
@@ -126,19 +133,28 @@ export function BlocMesExercices() {
                   <div className="meta-liste__ligne">
                     <span className="meta-liste__cle">Note reçue</span>
                     <span className="meta-liste__valeur">
-                      {exercice.note === null || exercice.note === undefined ? (
+                      {exercice.moyenne === null || exercice.moyenne === undefined ? (
                         <span className="vide-ou-tiret">Pas encore notée</span>
                       ) : (
-                        formaterMoyenne(exercice.note)
+                        formaterMoyenne(exercice.moyenne)
                       )}
                     </span>
                   </div>
-                  {exercice.commentaire ? (
+                  {/* Note provisoire : un seul des deux pairs a encore répondu. */}
+                  {exercice.statutNote === 'PROVISOIRE' && exercice.notesRendues > 0 ? (
                     <div className="meta-liste__ligne">
-                      <span className="meta-liste__cle">Commentaire</span>
-                      <span className="meta-liste__valeur">{exercice.commentaire}</span>
+                      <span className="meta-liste__cle">En attente</span>
+                      <span className="meta-liste__valeur">
+                        Note provisoire : {exercice.notesRendues} relecture(s) sur 2
+                      </span>
                     </div>
                   ) : null}
+                  {(exercice.commentaires ?? []).map((item, index) => (
+                    <div className="meta-liste__ligne" key={index}>
+                      <span className="meta-liste__cle">Commentaire</span>
+                      <span className="meta-liste__valeur">{item.commentaire}</span>
+                    </div>
+                  ))}
                 </div>
               </li>
             )
