@@ -12,7 +12,7 @@ toute évolution passera par une migration versionnée **et** une mise à jour d
 | `session` | `code` unique ; `statut` ∈ {OUVERTE, CLOTUREE} ; `cloturee_at` nul tant que la session est ouverte (H2, Q12) |
 | `presence` | unique (`session_id`, `etudiant_id`) ; `source` ∈ {ETUDIANT, FORMATEUR} (RG9, Q14) |
 | `exercice` | unique (`session_id`, `etudiant_id`) — un dépôt par étudiant et par session (409 imposé) ; statut ∈ {DEPOSE, EN_ATTENTE_DE_RELECTURE, RELU} |
-| `relecture` | unique (`exercice_id`) — un seul relecteur (Q6) ; statut ∈ {ASSIGNEE, EN_COURS, RENDUE} ; `note` entière 0–20 (RG3) ; le relecteur n'est jamais l'auteur (RG2, garanti par le service) ; démarrer verrouille le lien (H4, Q13) |
+| `relecture` | ~~unique (`exercice_id`) — un seul relecteur (Q6)~~ **depuis V3 : plusieurs lignes par exercice (2 relecteurs, enveloppe étape 3)** ; statut ∈ {ASSIGNEE, EN_COURS, RENDUE} ; `note` entière 0–20 (RG3) ; le relecteur n'est jamais l'auteur (RG2) ni déjà relecteur du même exercice (RG12) ; démarrer verrouille le lien (H4, Q13) |
 | `tentative_code` | compteur RG10 par (`etudiant_id`, `session_id`) ; index uniques : (`etudiant_id`, `session_id`) quand la session est connue, (`etudiant_id`) quand elle ne l'est pas (H7, Q4) |
 
 **Pas d'entité `formateur` ni `utilisateur`** : aucune opération du contrat n'identifie le
@@ -29,7 +29,7 @@ erDiagram
     ETUDIANT ||--o{ PRESENCE : "marque"
     SESSION ||--o{ EXERCICE : "reçoit"
     ETUDIANT ||--o{ EXERCICE : "dépose"
-    EXERCICE ||--o| RELECTURE : "est relu (un seul relecteur)"
+    EXERCICE ||--o{ RELECTURE : "est relu (2 pairs depuis V3)"
     ETUDIANT ||--o{ RELECTURE : "assure en tant que relecteur"
     ETUDIANT ||--o{ TENTATIVE_CODE : "accumule les échecs"
     SESSION ||--o{ TENTATIVE_CODE : "concerne"
@@ -70,8 +70,8 @@ erDiagram
     }
     RELECTURE {
         bigint id PK
-        bigint exercice_id FK "unique — un seul relecteur (Q6)"
-        bigint relecteur_id FK
+        bigint exercice_id FK "plus unique depuis V3 — 2 relecteurs par exercice"
+        bigint relecteur_id FK "distinct de l'auteur et du 1er relecteur (RG12)"
         string statut "ASSIGNEE | EN_COURS | RENDUE"
         datetime demarree_at "démarrage (Q13, H4)"
         int note "0 à 20, nul avant envoi"
@@ -92,7 +92,7 @@ erDiagram
 | Règle | Où elle est garantie |
 |---|---|
 | Une présence par étudiant et par session | contrainte unique en base + service |
-| Un seul relecteur par exercice (Q6) | contrainte unique sur `relecture.exercice_id` |
+| Un seul relecteur par exercice (Q6) | ~~contrainte unique sur `relecture.exercice_id`~~ **Retiré en V3 (enveloppe étape 3) : un exercice porte désormais deux relectures** |
 | Jamais relire son propre exercice (RG2) | service (règle inter-tables) |
 | Note entière de 0 à 20 (RG3) | validation d'entrée + contrainte base |
 | Un dépôt par étudiant et par session | contrainte unique en base + service |

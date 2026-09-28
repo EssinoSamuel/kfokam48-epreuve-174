@@ -87,7 +87,7 @@ end note
 
 note right of UC8
   Q5 / RG2 : jamais l'auteur de l'exercice.
-  Q6 / RG4 : un seul relecteur, choisi parmi
+  Q6 / RG4 : deux relecteurs, choisis parmi
   les étudiants présents à la session.
 end note
 

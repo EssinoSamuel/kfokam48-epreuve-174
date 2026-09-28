@@ -118,7 +118,7 @@ public class ReferentielController {
                 .toList();
     }
 
-    /** Zone libre (H9) : exercices d'un étudiant avec note et commentaire (EF9). */
+    /** Zone libre (H9) : exercices d'un étudiant avec moyenne et commentaires (EF9). */
     @GetMapping("/etudiants/{id}/exercices")
     public List<ExerciceDto.Reponse> exercicesDeLEtudiant(@PathVariable Long id) {
         return exerciceService.parEtudiant(id).stream()

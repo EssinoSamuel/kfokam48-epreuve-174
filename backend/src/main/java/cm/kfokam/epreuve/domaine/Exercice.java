@@ -1,5 +1,6 @@
 package cm.kfokam.epreuve.domaine;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,10 +11,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -40,13 +43,12 @@ public class Exercice {
     private Etudiant etudiant;
 
     /**
-     * Relation inverse vers la relecture éventuelle (un seul relecteur par
-     * exercice — Q6). mappedBy car la clé étrangère est portée par relecture.
-     * Elle permet le fetch join dans les requêtes de lecture, ce qui évite
-     * toute LazyInitializationException au moment de sérialiser le JSON.
+     * Relectures de l'exercice. {@code mappedBy} car la clé étrangère est
+     * portée par relecture. Depuis la migration V3 (enveloppe étape 3) il y a
+     * <b>deux</b> relectures par exercice : le lien passe de 1..1 à 1..N.
      */
-    @OneToOne(mappedBy = "exercice", fetch = FetchType.LAZY)
-    private Relecture relectureLecture;
+    @OneToMany(mappedBy = "exercice", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Relecture> relectureLecture = new ArrayList<>();
 
     @Column(name = "lien", nullable = false, length = 2048)
     private String lien;
@@ -109,9 +111,16 @@ public class Exercice {
         return etudiant;
     }
 
-    /** Relecture éventuelle, déjà chargée par les requêtes de lecture. */
-    public Relecture getRelectureLecture() {
+    /** Relectures de l'exercice, déjà chargées par les requêtes de lecture. */
+    public List<Relecture> getRelectureLecture() {
         return relectureLecture;
+    }
+
+    /** Nombre de relectures rendues parmi celles de cet exercice. */
+    public int nombreNotesRendues() {
+        return (int) relectureLecture.stream()
+                .filter(r -> r.getStatut() == StatutRelecture.RENDUE)
+                .count();
     }
 
     public String getLien() {

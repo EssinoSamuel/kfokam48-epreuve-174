@@ -26,7 +26,7 @@ Notes :
 
 ```mermaid
 stateDiagram-v2
-    [*] --> ASSIGNEE : exercice déposé, relecteur tiré au hasard (Q7)
+    [*] --> ASSIGNEE : exercice déposé, DEUX relecteurs tirés au hasard (Q7, RG4 modifié par l'enveloppe étape 3)
     ASSIGNEE --> EN_COURS : le relecteur démarre — le lien est verrouillé (H4, Q13)
     ASSIGNEE --> RENDUE : note envoyée directement (EF8)
     EN_COURS --> RENDUE : note et commentaire envoyés — définitif (Q15, RG5)
@@ -38,3 +38,9 @@ Notes :
 - un envoi après `RENDUE` est refusé : `409 RELECTURE_DEJA_RENDUE` (contrat imposé, Q15) ;
 - un démarrage après `EN_COURS` est refusé : `409 RELECTURE_DEJA_COMMENCEE` (H4) ;
 - `ASSIGNEE → RENDUE` est permis : un relecteur peut rendre directement sans démarrer.
+- **Depuis la migration `V3` (enveloppe étape 3)**, cet automate existe **en double
+  exemplaire par exercice** : deux pairs relisent le même dépôt. Chaque relecture suit
+  le même cycle, indépendamment de l'autre.
+- Tant que les deux notes ne sont pas rendues, la note affichée à l'étudiant est
+  **provisoire** ; elle devient **définitive** — et égale à la moyenne des deux — quand
+  les deux relectures sont `RENDUE`.

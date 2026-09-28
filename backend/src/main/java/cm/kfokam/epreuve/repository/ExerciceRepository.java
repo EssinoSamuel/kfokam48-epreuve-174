@@ -41,8 +41,8 @@ public interface ExerciceRepository extends JpaRepository<Exercice, Long> {
     List<Exercice> trouverAvecDetailsPourEtudiant(@Param("etudiantId") Long etudiantId);
 
     /**
-     * Exercices d'une session, détails chargés (même raison : lazy loading
-     * impossible après fermeture de la transaction).
+     * Exercices d'une session, détails chargés.
+     * Lazy loading impossible après fermeture de la transaction.
      */
     @Query("""
             select distinct e from Exercice e

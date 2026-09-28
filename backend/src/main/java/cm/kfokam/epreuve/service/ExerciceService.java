@@ -30,13 +30,17 @@ import cm.kfokam.epreuve.web.erreur.ErreurMetierException;
  *       clôturée, sans être subordonné à la présence (décisions H5 et H2, Q12) ;</li>
  *   <li><b>EF6 / RG8</b> — remplacement du lien refusé si la session est
  *       clôturée, la relecture commencée ou rendue (Q13) ;</li>
- *   <li><b>EF7 / RG2 / RG4</b> — relecteur tiré au sort parmi les étudiants
- *       présents, jamais l'auteur, un seul par exercice (Q5, Q6, Q7) ;</li>
+ *   <li><b>EF7 / RG2 / RG4 / RG12</b> — deux relecteurs distincts tirés au sort
+ *       parmi les étudiants présents, jamais l'auteur, jamais deux fois le même
+ *       (Q5, Q7, et Q6 tel que modifié par l'enveloppe d'étape 3) ;</li>
  *   <li><b>H6</b> — sans candidat éligible, l'exercice reste {@code DEPOSE}.</li>
  * </ul>
  */
 @Service
 public class ExerciceService {
+
+    /** Deux pairs relisent chaque exercice (enveloppe étape 3, RG4 modifié). */
+    static final int NOMBRE_RELECTEURS = 2;
 
     private final ExerciceRepository exercices;
     private final EtudiantRepository etudiants;
@@ -84,7 +88,7 @@ public class ExerciceService {
         Exercice exercice = exercices.save(
                 Exercice.deposer(session, etudiant, lienNormalise, Instant.now(horloge)));
 
-        assignerRelecteur(exercice, session, etudiant);
+        assignerRelecteurs(exercice, session, etudiant);
         return exercice;
     }
 
@@ -113,21 +117,23 @@ public class ExerciceService {
     }
 
     /**
-     * RG2 / RG4 / Q7 : tire au sort un relecteur parmi les étudiants présents.
-     * Sans candidat éligible, l'exercice reste {@code DEPOSE} (H6) : aucune
-     * nouvelle tentative automatique n'est programmée (limite assumée).
+     * RG2 / RG4 / RG12 : tirage de DEUX relecteurs distincts (enveloppe étape 3).
+     *
+     * <p>Avant : un seul relecteur par exercice (Q6). Raison du changement donnée
+     * par le client : « quand il ne rend rien, l'étudiant n'a aucune note ».
+     *
+     * <p>Si un seul pair est présent, on n'en designate qu'un : on ne bloque pas
+     * le dépôt pour autant (dégradation assumée), l'exercice reste visible comme
+     * « en attente de relecture » (H6).
      */
-    private void assignerRelecteur(Exercice exercice, Session session, Etudiant auteur) {
+    private void assignerRelecteurs(Exercice exercice, Session session, Etudiant auteur) {
         List<Etudiant> presents = presences.etudiantsPresents(session.getId());
-        Optional<Etudiant> candidat = tirageAuSort.choisir(presents, auteur.getId());
-        if (candidat.isEmpty()) {
-            return;
+        for (Etudiant relecteur : tirageAuSort.choisir(presents, auteur.getId(), NOMBRE_RELECTEURS)) {
+            relectures.save(Relecture.assigner(exercice, relecteur));
         }
-        if (relectures.existsByExerciceId(exercice.getId())) {
-            return;
+        if (exercice.getStatut() == StatutExercice.DEPOSE) {
+            exercice.marquerRelecteurAssigne();
         }
-        relectures.save(Relecture.assigner(exercice, candidat.get()));
-        exercice.marquerRelecteurAssigne();
     }
 
     @Transactional(readOnly = true)

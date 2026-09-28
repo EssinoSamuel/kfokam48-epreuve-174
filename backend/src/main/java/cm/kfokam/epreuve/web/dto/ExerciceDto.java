@@ -1,6 +1,7 @@
 package cm.kfokam.epreuve.web.dto;
 
 import java.time.Instant;
+import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.Size;
 
 import cm.kfokam.epreuve.domaine.Exercice;
 import cm.kfokam.epreuve.domaine.Relecture;
+import cm.kfokam.epreuve.domaine.StatutRelecture;
 
 /**
  * Objets d'échange de {@code /api/exercices}.
@@ -45,31 +47,78 @@ public final class ExerciceDto {
     ) {
     }
 
-    /** Aperçu du relecteur associé à un exercice. */
-    public record RelecteurVue(Long relectureId, Long etudiantId, String nom, String statut) {
+    /**
+     * Aperçu d'une relecture pour le formateur : on ne montre QUE le statut.
+     * Le nom du relecteur n'est jamais exposé à l'étudiant relu (RG11, Q8).
+     */
+    public record RelecteurVue(Long relectureId, Long etudiantId, String statut) {
     }
 
-    /** Exercice tel que renvoyé à l'interface. */
+    /**
+     * Exercice tel que renvoyé à l'interface.
+     *
+     * <p><b>Moyenne des deux relectures</b> (enveloppe étape 3) : depuis la
+     * migration {@code V3}, un exercice est relu par deux pairs. La note
+     * affichée est la moyenne des notes rendues, et non celle d'un relecteur
+     * unique. Tant que les deux relectures ne sont pas rendues, la note est
+     * marquée <em>provisoire</em>.
+     *
+     * <p>Le calcul est fait côté serveur : le frontend ne fait aucun calcul
+     * (contrainte F3 du sujet).
+     *
+     * @param relectures   les deux relectures (liste vide si non assignées)
+     * @param moyenne      moyenne des notes rendues, {@code null} si aucune
+     * @param notesRendues nombre de notes effectivement rendues
+     * @param statutNote   {@code PROVISOIRE} ou {@code DEFINITIVE}
+     */
     public record Reponse(Long id, Long sessionId, Long etudiantId, String etudiantNom,
                           String lien, String statut, Instant deposeAt,
-                          Integer note, String commentaire,
-                          RelecteurVue relecture) {
+                          Double moyenne, Integer notesRendues, String statutNote,
+                          List<CommentaireVue> commentaires,
+                          List<RelecteurVue> relecteurs) {
 
-        public static Reponse de(Exercice exercice) {
-            return de(exercice, null);
+        /** Un commentaire rendu, sans l'identité du relecteur (RG11 / Q8). */
+        public record CommentaireVue(String commentaire) {
         }
 
-        public static Reponse de(Exercice exercice, Relecture relecture) {
-            RelecteurVue vue = relecture == null
-                    ? null
-                    : new RelecteurVue(
-                            relecture.getId(),
-                            relecture.getRelecteur().getId(),
-                            relecture.getRelecteur().getNom(),
-                            relecture.getStatut().name());
-            // note et commentaire proviennent de la relecture rendue : ils
-            // restent nuls tant qu'aucune note n'est arrivée (contrat API,
-            // GET /api/etudiants/{id}/exercices — champs requis note/commentaire).
+        public static Reponse de(Exercice exercice) {
+            return de(exercice, List.of());
+        }
+
+        /**
+         * Construit la réponse à partir de l'exercice et de ses relectures.
+         *
+         * @param relectures relectures déjà chargées (évite le lazy loading
+         */
+        public static Reponse de(Exercice exercice, List<Relecture> relectures) {
+            List<Integer> notes = relectures.stream()
+                    .filter(r -> r.getStatut() == StatutRelecture.RENDUE)
+                    .map(Relecture::getNote)
+                    .filter(java.util.Objects::nonNull)
+                    .toList();
+
+            Double moyenne = null;
+            if (!notes.isEmpty()) {
+                double somme = notes.stream().mapToInt(Integer::intValue).sum();
+                moyenne = Math.round((somme / notes.size()) * 100.0) / 100.0;
+            }
+            // Deux notes rendues = définitive ; sinon provisoire (enveloppe étape 3).
+            String statutNote = notes.size() >= 2 ? "DEFINITIVE" : "PROVISOIRE";
+
+            List<CommentaireVue> commentaires = relectures.stream()
+                    .filter(r -> r.getStatut() == StatutRelecture.RENDUE)
+                    .map(Relecture::getCommentaire)
+                    .filter(java.util.Objects::nonNull)
+                    .map(CommentaireVue::new)
+                    .toList();
+
+            List<RelecteurVue> vues = relectures.stream()
+                    .map(r -> new RelecteurVue(
+                            r.getId(),
+                            r.getRelecteur().getId(),
+                            r.getStatut().name()))
+                    .toList();
+
             return new Reponse(
                     exercice.getId(),
                     exercice.getSession().getId(),
@@ -78,9 +127,11 @@ public final class ExerciceDto {
                     exercice.getLien(),
                     exercice.getStatut().name(),
                     exercice.getDeposeAt(),
-                    relecture == null ? null : relecture.getNote(),
-                    relecture == null ? null : relecture.getCommentaire(),
-                    vue);
+                    moyenne,
+                    notes.size(),
+                    statutNote,
+                    commentaires,
+                    vues);
         }
     }
 }
