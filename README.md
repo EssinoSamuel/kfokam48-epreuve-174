@@ -45,7 +45,12 @@ cd frontend && npm install && npm run dev
 Puis ouvrir <http://localhost:5173>.
 
 Le schéma et les données de démonstration sont créés automatiquement au démarrage
-du backend (migrations Flyway `V1` et `V2`). **Rien d'autre à lancer.**
+du backend (migrations Flyway `V1` à `V3`). **Rien d'autre à lancer.**
+
+> Si le backend refuse de démarrer avec `Migration checksum mismatch`, c'est qu'une
+> migration déjà appliquée a été retouchée : recréer la base avec
+> `docker compose down -v && docker compose up -d` (les données de démonstration
+> sont rejouées par `V2`, rien n'est perdu).
 
 > Sous Windows, remplacer `./mvnw` par `mvnw.cmd`.
 
@@ -85,7 +90,9 @@ C'est la contrainte F3 du sujet.
 - **Formateur** : promotion, ouverture d'une session et affichage du code, ajout
   manuel d'une présence, clôture de la session, tableau récapitulatif.
 - **Étudiant** : choix de son nom, marquage de la présence avec le code, dépôt d'un
-  exercice, consultation de ses notes et commentaires.
+  exercice, consultation de ses notes et commentaires. Chaque exercice est relu par
+  **deux pairs** : la note affichée est la moyenne des deux, et elle porte la mention
+  « **Note provisoire** » tant qu'un seul des deux a rendu.
 - **Relecteur** : liste des exercices assignés, démarrage de la relecture, notation
   de 0 à 20 avec commentaire.
 

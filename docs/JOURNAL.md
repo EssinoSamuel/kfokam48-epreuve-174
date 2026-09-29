@@ -78,22 +78,84 @@ framework justifié) avant le jalon `v0.1`.
 ## Étape 3 — Enveloppe
 
 **Fait :**
+- **Sujet A — le bug.** Issue **#16** ouverte **avant** tout code. Le client décrivait un
+  symptôme (« un seul étudiant apparaît dans ma liste ») : traduit en cause, c'est le
+  chemin `POST /api/sessions/{id}/presences` **imposé par le contrat** qui n'existait pas
+  côté backend (seul `POST /api/presences/session/{id}` était exposé) → **404**, aucun
+  ajout manuel possible (EF3, RG9, Q14). Test d'intégration `PresenceFormateurIT` écrit
+  **avant** le correctif et **qui échoue** : `Tests run: 3, Errors: 3`. Correctif dans la
+  branche dédiée `fix/bug-presence-formateur`, commit référençant l'issue (`397a234`),
+  puis test **vert** : `Tests run: 3, Errors: 0`.
+- **Sujet B — le changement de besoin.** Analyse remise à jour **dans un commit qui le
+  dit** (`b815737`) : EF6 retirée du périmètre, EF7 reformulée, **RG4 réécrite** pour deux
+  relecteurs, **RG12 ajoutée** (deux relecteurs distincts), section 7 complétée des
+  conséquences C1–C4 ; diagrammes D1, D2 et D4 corrigés.
+- **Migration `V3__relecture_par_deux_pairs.sql`** : **ajoutée**, jamais une modification en
+  place. Elle retire la contrainte d'unicité héritée de Q6/RG4, ajoute un index sur
+  `relecture (exercice_id)`, crée la vue `moyenne_exercice` (moyenne, notes rendues,
+  statut) et attribue un **second relecteur** aux exercices déjà en attente, en SQL
+  portable, sans supprimer aucune donnée : elle survit à une base déjà remplie.
+- Code : `TirageAuSort.choisir(presents, auteur, nombre)` tire N relecteurs distincts,
+  `ExerciceService` en assigne deux, le DTO expose `moyenne`, `notesRendues`, `statutNote`
+  et les commentaires **sans l'identité des relecteurs** (RG11/Q8) ; le frontend affiche
+  « Note provisoire » tant que les deux pairs n'ont pas rendu.
+- **Séparation exigée** : deux branches (`fix/bug-presence-formateur`,
+  `feat/relecture-par-deux-pairs`) et deux fusions distinctes sur `main`.
 
-**Bloqué :**
+**Bloqué :** ~1 h sur un **blocage de démarrage du backend contre PostgreSQL** :
+`Migration checksum mismatch` sur les versions 1 et 2. Cause réelle : pour rendre `V1` et
+`V2` exécutables sur le H2 des tests, leur contenu avait été paramétré par des placeholders
+Flyway, **après** avoir été appliqué dans le volume PostgreSQL local — les empreintes ne
+correspondaient plus. Les tests H2 ne pouvaient pas le voir (base neuve à chaque
+exécution). Résolu en détruisant puis recréant le volume (`docker compose down -v`) :
+`Successfully applied 3 migrations … now at version v3`. Leçon retenue et écrite dans le
+`CHANGELOG` : **on ne retouche jamais une migration déjà appliquée**.
+La machine est également restée saturée (démarrage Spring Boot mesuré à 226 s), ce qui a
+fait échouer plusieurs commandes du poste.
 
-**IA :**
+**IA :** demandé — rédaction du test qui démontre le bug avant correction, analyse des
+conséquences du changement sur le cahier des charges et les diagrammes, écriture de la
+migration `V3`, refactorisation du tirage au sort. **Vérification :** le test du sujet A a
+été exécuté et a échoué avant le correctif, puis est repassé au vert ; `mvnw test` complet
+(7 tests, 0 échec) ; les migrations ont été appliquées pour de vrai sur PostgreSQL, pas
+seulement sur H2 ; chaque affirmation du CHANGELOG a été confrontée à `git log`.
 
 **Ce que j'ai sorti du périmètre pour absorber le changement, et pourquoi :**
+**EF6 — le remplacement du lien d'exercice par son auteur.** C'était une exigence *Should*,
+hors du cœur noté. La conserver aurait obligé à figer le premier relecteur dès que
+quelqu'un commence à relire, ce qui contredit frontalement la nouvelle règle « chaque
+exercice est relu par deux pairs différents » : les deux exigences ne peuvent pas tenir
+ensemble. J'ai donc sacrifié celle qui n'était pas obligatoire, et je l'ai écrit dans
+`docs/CAHIER_DES_CHARGES.md` §7 avec les quatre conséquences du changement (C1–C4).
 
 ---
 
 ## Étape 4 — Version finale
 
 **Fait :**
+- `[JALON] v1.0` posé, puis `CHANGELOG.md` écrit **dans l'ordre de l'historique Git**.
+- `README.md` corrigé : il annonçait encore les migrations `V1` et `V2` ; il décrit
+  maintenant `V1` à `V3` et le fonctionnement de la note provisoire.
+- **Test de bout en bout des deux relecteurs**, exécuté contre PostgreSQL et non contre H2 :
+  dépôt d'un exercice → deux relecteurs distincts assignés, l'auteur exclu (RG2/RG12) →
+  première note rendue, l'API répond `statutNote: "PROVISOIRE"` avec la moyenne de la seule
+  note reçue → seconde note rendue, `statutNote: "DEFINITIVE"` et moyenne des deux. La
+  réponse vérifiée ne contient **que** des commentaires et un identifiant de relecture,
+  jamais son nom (RG11/Q8).
+- Parcours « clone vierge » validé : base vide, `Successfully applied 3 migrations … now at
+  version v3` puis démarrage sur le port 8080.
 
-**Bloqué :**
+**Bloqué :** le test de bout en bout a été retardé par la perte du proxy de port de Docker
+Desktop après plusieurs heures d'inactivité (`La tentative de connexion a échoué` côté
+pool Hikari alors que le conteneur était *healthy*) — réglé par un redémarrage du
+conteneur. Par manque de temps avant l'heure de remise, le **backlog restant n'a pas pu
+être trié** (re-priorisation des issues `Should` / `Could` non commencée).
 
-**IA :**
+**IA :** demandé — le scénario de bout en bout, la rédaction du `CHANGELOG` et des entrées
+de journal. **Vérification :** la preuve du scénario est la réponse brute de l'API
+(`moyenne`, `notesRendues`, `statutNote`, forme des commentaires), lue directement dans la
+sortie des appels ; toute affirmation du CHANGELOG a été recontrôlée contre `git log`.
+
 
 ---
 
