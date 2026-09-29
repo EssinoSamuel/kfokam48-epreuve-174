@@ -144,6 +144,12 @@ ensemble. J'ai donc sacrifié celle qui n'était pas obligatoire, et je l'ai éc
   jamais son nom (RG11/Q8).
 - Parcours « clone vierge » validé : base vide, `Successfully applied 3 migrations … now at
   version v3` puis démarrage sur le port 8080.
+- **README testé depuis un clone vierge, dans un dossier vide** : le dépôt public a été
+  cloné hors du projet (`git clone` dans un dossier neuf), puis la commande de test du
+  README y a été lancée telle quelle. Résultat : `Tests run: 7, Failures: 0, Errors: 0`,
+  `BUILD SUCCESS`. Cela prouve deux choses à la fois : le dépôt se suffit à lui-même
+  (wrapper `mvnw` **et son jar** commités, le correcteur n'installe rien — B1) et les tests
+  ne dépendent ni de Docker ni de la base locale (contrainte **B6**).
 - **Backlog trié** : `docs/BACKLOG.md` donne l'état des 17 tickets — 16 livrés, 1 sacrifié —
   avec la justification du sacrifice et la suite à donner.
 
