@@ -25,8 +25,6 @@
 
 ## Épreuve Git — étape 5
 
-| | |
-|---|---|
 Aucun second dépôt : l'**étape 5 (épreuve `git-lab`) a été annulée** par l'encadrement.
 Aucun dépôt `kfokam48-gitlab-174` n'est requis, et aucun n'est rendu.
 
@@ -37,7 +35,7 @@ Aucun dépôt `kfokam48-gitlab-174` n'est requis, et aucun n'est rendu.
 | Frontend utilisé | React + Vite |
 | Backend | Java 21 LTS · Spring Boot · Maven (wrapper `mvnw` commité) |
 | Base de données | PostgreSQL 16 — `docker compose` (port hôte **5434**, 5432 occupé) + migrations Flyway |
-| Commandes de démarrage | à documenter à l'étape 2 (README, trois commandes maximum) |
+| Commandes de démarrage | `docker compose up -d` puis `cd backend && mvnw spring-boot:run` puis `cd frontend && npm install && npm run dev` — détail dans le `README.md` |
 
 ## Ce que j'ai livré
 
