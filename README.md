@@ -158,6 +158,7 @@ Le test s'exécute sur poste vierge : il ne dépend ni de Docker, ni d'une base 
 ## 7. Documentation
 
 - `docs/CAHIER_DES_CHARGES.md` — exigences (EF), règles de gestion (RG), zones d'ombre et contradictions tranchées
+- `docs/BACKLOG.md` — état trié du backlog au jalon `v1.0` (livré / sacrifié / reporté)
 - `docs/JOURNAL.md` — avancement par étape
 - `docs/diagrammes/` — cas d'utilisation, modèle de données, séquence, états-transitions
 - `docs/rapports/` — rapports d'audit et d'analyse

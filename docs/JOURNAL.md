@@ -144,12 +144,19 @@ ensemble. J'ai donc sacrifié celle qui n'était pas obligatoire, et je l'ai éc
   jamais son nom (RG11/Q8).
 - Parcours « clone vierge » validé : base vide, `Successfully applied 3 migrations … now at
   version v3` puis démarrage sur le port 8080.
+- **Backlog trié** : `docs/BACKLOG.md` donne l'état des 17 tickets — 16 livrés, 1 sacrifié —
+  avec la justification du sacrifice et la suite à donner.
 
 **Bloqué :** le test de bout en bout a été retardé par la perte du proxy de port de Docker
 Desktop après plusieurs heures d'inactivité (`La tentative de connexion a échoué` côté
 pool Hikari alors que le conteneur était *healthy*) — réglé par un redémarrage du
-conteneur. Par manque de temps avant l'heure de remise, le **backlog restant n'a pas pu
-être trié** (re-priorisation des issues `Should` / `Could` non commencée).
+conteneur. Autre blocage : **les deux nouveaux tickets (bug et évolution) n'ont pas pu être
+créés sur GitHub**. Le jeton n'est pas exploitable depuis un shell non interactif : `gh`
+n'est pas authentifié, et le gestionnaire d'identifiants refuse de livrer le jeton
+mémorisé (`git credential fill` reste bloqué). Les contenus sont donc prêts dans
+`.tmp/issues/` et devront être créés à la main — **l'issue du bug doit être créée en
+premier**, pour porter le numéro 16 et faire se résoudre la référence `fix(#16)` du commit
+de correctif.
 
 **IA :** demandé — le scénario de bout en bout, la rédaction du `CHANGELOG` et des entrées
 de journal. **Vérification :** la preuve du scénario est la réponse brute de l'API

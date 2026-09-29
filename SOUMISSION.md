@@ -48,9 +48,12 @@ dans un tableau récapitulatif. Les 5 opérations imposées du contrat sont resp
 lettre (chemins, verbes, codes de statut, erreur `{code, message}`), et le schéma est
 versionné par Flyway (`V1` à `V3`), testé pour de vrai sur PostgreSQL.
 
-Ce qui ne fonctionne pas ou reste incomplet : le **backlog restant n'a pas été trié**
-(re-priorisation des issues *Should* / *Could* non faite faute de temps) ; l'**étape 5
-(épreuve Git) a été annulée** par l'encadrement, aucun dépôt `git-lab` n'est donc rendu.
+Ce qui ne fonctionne pas ou reste incomplet : **EF6 (le remplacement du lien d'exercice) est
+sacrifié**, et l'**étape 5 (épreuve Git) a été annulée** par l'encadrement — aucun dépôt
+`git-lab` n'est rendu. Le backlog est trié, son état est écrit dans `docs/BACKLOG.md`
+(16 tickets livrés, 1 sacrifié). Deux tickets (le bug, et l'évolution « deux relecteurs »)
+n'ont pas pu être créés sur GitHub, le jeton y étant inaccessible depuis un shell non
+interactif : leurs contenus sont prêts dans `.tmp/issues/`.
 
 Ce qui a été volontairement laissé de côté : **EF6, le remplacement du lien d'exercice**
 par son auteur. C'était une exigence *Should*, et la garder aurait obligé à figer le
